@@ -36,14 +36,14 @@ def run(device_id: int, device_token: str, api_url: str, push_interval: float, d
     try:
         while stream.is_active():
             if rms > 0:
-                db: float = 20 * log10(rms)
+                db: float = (20 * log10(rms)) + decibel_offset
                 try:
                     headers = {
                         "XDevice-ID": device_id,
                         "XDevice-Token": device_token
                     }
                     payload = {
-                        "decibel_val": db + float(decibel_offset)
+                        "decibel_val": db
                     }
                     requests.post(api_url, headers=headers, json=payload)
                     time.sleep(push_interval)
