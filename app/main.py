@@ -5,5 +5,5 @@ if __name__ == "__main__":
     run(device_id=DEVICE_ID,
         device_token=DEVICE_TOKEN,
         api_url=API_URL,
-        push_interval=PUSH_INTERVAL,
-        decibel_offset=DECIBEL_OFFSET)
+        push_interval=float(PUSH_INTERVAL),
+        decibel_offset=float(DECIBEL_OFFSET))
