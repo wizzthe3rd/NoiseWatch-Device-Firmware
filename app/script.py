@@ -22,7 +22,7 @@ def callback(in_data):
     return in_data, pyaudio.paContinue
 
 
-def run(device_id: int, device_token: str, api_url: str, push_interval, decibel_offset: float) -> None:
+def run(device_id: int, device_token: str, api_url: str, push_interval: float, decibel_offset: float) -> None:
     stream = p.open(format=FORMAT,
                     input_device_index=DEVICE,
                     channels=CHANNELS,
@@ -36,14 +36,14 @@ def run(device_id: int, device_token: str, api_url: str, push_interval, decibel_
     try:
         while stream.is_active():
             if rms > 0:
-                db = 20 * log10(rms)
+                db: float = 20 * log10(rms)
                 try:
                     headers = {
                         "XDevice-ID": device_id,
                         "XDevice-Token": device_token
                     }
                     payload = {
-                        "decibel_val": db + decibel_offset
+                        "decibel_val": db + float(decibel_offset)
                     }
                     requests.post(api_url, headers=headers, json=payload)
                     time.sleep(push_interval)
