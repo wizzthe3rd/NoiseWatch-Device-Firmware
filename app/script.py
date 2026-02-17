@@ -35,21 +35,29 @@ def run(device_id: int, device_token: str, api_url: str, push_interval: float, d
     print("ctr+c to stop")
     try:
         while stream.is_active():
-            if rms > 0:
-                db: float = (20 * log10(rms)) + decibel_offset
-                try:
-                    headers = {
-                        "XDevice-ID": device_id,
-                        "XDevice-Token": device_token
-                    }
-                    payload = {
-                        "decibel_val": db
-                    }
-                    requests.post(api_url, headers=headers, json=payload)
-                    time.sleep(push_interval)
-                except Exception as e:
-                    raise Exception("Failed to push reading", e)
-                print(f"RMS: {rms:.6f} | dB: {db:.2f} dB")
+            if rms <= 1e-6:
+                time.sleep(push_interval)
+                continue
+
+            db_raw: float = 20 * log10(rms)
+            if db_raw <= -100:
+                time.sleep(push_interval)
+                continue
+
+            db: float = db_raw + decibel_offset
+            try:
+                headers = {
+                    "XDevice-ID": device_id,
+                    "XDevice-Token": device_token
+                }
+                payload = {
+                    "decibel_val": db
+                }
+                requests.post(api_url, headers=headers, json=payload)
+                time.sleep(push_interval)
+            except Exception as e:
+                raise Exception("Failed to push reading", e)
+            print(f"RMS: {rms:.6f} | dB: {db:.2f} dB")
     except KeyboardInterrupt:
         print("\nending...")
 
