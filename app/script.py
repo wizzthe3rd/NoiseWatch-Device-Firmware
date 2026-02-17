@@ -14,7 +14,7 @@ DEVICE = 1
 rms = 1e-10
 
 
-def callback(in_data):
+def callback(in_data, frame_count, time_info, status):
     global rms
     # bytes to numpy array
     audio_data = np.frombuffer(in_data, dtype=np.int32)
