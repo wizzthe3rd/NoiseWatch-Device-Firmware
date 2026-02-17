@@ -16,9 +16,9 @@ rms = 1e-10
 
 def callback(in_data, frame_count, time_info, status):
     global rms
-    # bytes to numpy array
-    audio_data = np.frombuffer(in_data, dtype=np.int32)
-    rms = np.sqrt(np.mean(audio_data ** 2)) / (2 ** 31)
+    audio_data = np.frombuffer(in_data, dtype=np.int32).astype(np.float64)
+    audio_data /= np.iinfo(np.int32).max
+    rms = np.sqrt(np.mean(audio_data ** 2))
     return in_data, pyaudio.paContinue
 
 
