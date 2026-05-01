@@ -10,7 +10,7 @@ FORMAT = pyaudio.paInt32  # 32bit
 RATE = 48000
 CHANNELS = 2
 CHUNK = 4096
-DEVICE = 1
+DEVICE = 2
 rms = 1e-10
 
 
@@ -30,21 +30,24 @@ def run(device_id: int, device_token: str, api_url: str, push_interval: float, d
                     input=True,
                     output=False,
                     stream_callback=callback)
-
     stream.start_stream()
     print("ctr+c to stop")
     try:
         while stream.is_active():
+            time.sleep(push_interval)
+
+            print(f"[DEBUG] raw rms={rms:.8f}")
+
             if rms <= 1e-6:
-                time.sleep(push_interval)
                 continue
 
             db_raw: float = 20 * log10(rms)
             if db_raw <= -100:
-                time.sleep(push_interval)
                 continue
 
             db: float = db_raw + decibel_offset
+            print(f"RMS: {rms:.6f} | dB: {db:.2f} dB")
+
             try:
                 headers = {
                     "XDevice-ID": device_id,
@@ -53,11 +56,10 @@ def run(device_id: int, device_token: str, api_url: str, push_interval: float, d
                 payload = {
                     "decibel_val": db
                 }
-                requests.post(api_url, headers=headers, json=payload)
-                time.sleep(push_interval)
+                requests.post(api_url, headers=headers, json=payload, timeout=2)
             except Exception as e:
-                raise Exception("Failed to push reading", e)
-            print(f"RMS: {rms:.6f} | dB: {db:.2f} dB")
+                print(f"Push failed: {e}")
+
     except KeyboardInterrupt:
         print("\nending...")
 
